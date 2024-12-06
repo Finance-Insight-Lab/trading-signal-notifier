@@ -19,8 +19,8 @@ class AddIndicators:
         self.df = i.df
         
     def implement_new_inds(self):
-        data_high = self.df.loc[self.df['fractals_high']==True]
-        data_low = self.df.loc[self.df['fractals_low']==True]
+        data_high = self.df.loc[self.df['fractals_high']]
+        data_low = self.df.loc[self.df['fractals_low']]
         self.df.loc[list(data_high.index), 'aim_box_high'] = self.df.loc[list(data_high.index), 'High']
         self.df = self.df.ffill(axis=0)
         self.df.loc[list(data_low.index), 'aim_box_low'] = self.df.loc[list(data_low.index), 'Low']
