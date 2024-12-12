@@ -1,47 +1,58 @@
-import pandas as pd
-import numpy as np
-import datetime as dt
-import plotly.graph_objects as go
-from visualize import AlligatorVisualization
-from telegram_bot import TelegramBot
+import logging
+import sys
+import time
+from datetime import datetime
+
+import schedule
 from indicators import AddIndicators
 from read_data import DataReadYfinance
 from signal_strategy import strategy_confirm
-import plotly
-import schedule
-import time
-from datetime import datetime
-import sys
-import logging
-
-sys.stdout.write('AlligBot started!\n')
-logging.info('This is a log message')
+from telegram_bot import TelegramBot
+from visualize import AlligatorVisualization
 
 
-def task(reading_data):
+def visualize_signal(data_frame, time_frame: int, file_name: str) -> None:
+    visualization = AlligatorVisualization(data_frame, time_frame)
+    visualization.save_fig(file_name)
+
+
+def send_notif(
+    file_name: str, situation: str, time_frame: int, currency_name: str
+) -> None:
+    telegram_bot = TelegramBot(
+        f"{situation} + in {time_frame} TimeFrame and in {currency_name} currency",
+        file_name,
+    )
+    telegram_bot.send_message()
+
+
+def process_market(reading_data: DataReadYfinance):
     reading_data.get_data()
     reading_data.data_cleaning()
     df = reading_data.data
-    ind_add = AddIndicators(df)
-    ind_add.df
-    df = ind_add.df
-    df = df.iloc[50:]
-    df = df.reset_index(drop=True)
-    status = strategy_confirm(df)
-    print('status: ', status)
-
-    if status[0]:
-        message_text = status[1]
-        vis = AlligatorVisualization(df, 5)
-        vis.save_fig('test')
-        telegram_bot = TelegramBot(message_text + f' in 5m TimeFrame', 'test')
-        telegram_bot.send_message()
+    df_with_alligator = AddIndicators(df).calculate()
+    signal = strategy_confirm(df_with_alligator)
+    return signal, df_with_alligator
 
 
-reading_data = DataReadYfinance()
+def main():
+    read_data_obj = DataReadYfinance()
+    signal, df = process_market(reading_data=read_data_obj)
+    is_active, situation = signal
 
-print(f"started at {time.strftime('%X')}")
-print(f"connection to Yfinance started at {time.strftime('%X')}")
+    if is_active:
+        file_name = "test"
+        visualize_signal(
+            data_frame=df,
+            time_frame=read_data_obj.time_frame,
+            file_name=file_name,
+        )
+        send_notif(
+            file_name=file_name,
+            situation=situation,
+            time_frame=read_data_obj.time_frame,
+            currency_name=read_data_obj.currency_name,
+        )
 
 
 def job():
@@ -49,13 +60,13 @@ def job():
         print(datetime.now())
         if datetime.now().minute % 5 == 0:
             print(f"Started Reading Data at {time.strftime('%X')}")
-            task(reading_data)
+            main()
             print(f"Finished Reading Data at {time.strftime('%X')}")
     except:
         print("Error Running 'task' function")
 
 
-schedule.every(1).minutes.at(':00').do(job)
+schedule.every(1).minutes.at(":00").do(job)
 while True:
     schedule.run_pending()
     time.sleep(0.1)

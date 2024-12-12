@@ -2,8 +2,10 @@ import yfinance as yf
 
 
 class DataReadYfinance:
-    def __init__(self):
+    def __init__(self, currency_name="EURUSD", time_frame=5):
         self.data = None
+        self.currency_name = currency_name
+        self.time_frame = time_frame
 
     def get_data(self, currency="EURUSD", period="5m", duration="2d", length=150):
         ticker = yf.Ticker(f"{currency}=X")
