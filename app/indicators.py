@@ -1,7 +1,14 @@
+import pandas as pd
 from tapy import Indicators
+from typing import Protocol
 
 
-class AddIndicators:
+class AddIndicators(Protocol):
+    def calculate_indicators(self) -> pd.DataFrame:
+        pass
+
+
+class AlligatorIndicators:
     def __init__(self, df):
         self.df = df
 
@@ -39,7 +46,7 @@ class AddIndicators:
         self.df = self.df.iloc[50:]
         self.df = self.df.reset_index(drop=True)
 
-    def calculate(self):
+    def calculate_indicators(self):
         self._pre_defined_inds()
         self._implement_new_inds()
         self._prepare_for_signal()

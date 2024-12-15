@@ -1,10 +1,11 @@
 import logging
 import sys
 import time
+import pandas as pd
 from datetime import datetime
 
 import schedule
-from indicators import AddIndicators
+from indicators import AddIndicators, AlligatorIndicators
 from read_data import DataReadYfinance
 from signal_strategy import strategy_confirm
 from telegram_bot import TelegramBot
@@ -26,18 +27,24 @@ def send_notif(
     telegram_bot.send_message()
 
 
-def process_market(reading_data: DataReadYfinance):
+def process_market(
+    reading_data: DataReadYfinance,
+    indicator_class: AddIndicators,
+) -> tuple[list[bool, str], pd.DataFrame]:
     reading_data.get_data()
     reading_data.data_cleaning()
     df = reading_data.data
-    df_with_alligator = AddIndicators(df).calculate()
+    df_with_alligator = indicator_class(df).calculate()
     signal = strategy_confirm(df_with_alligator)
     return signal, df_with_alligator
 
 
-def main():
+def main() -> None:
     read_data_obj = DataReadYfinance()
-    signal, df = process_market(reading_data=read_data_obj)
+    signal, df_processed = process_market(
+        reading_data=read_data_obj,
+        indicator_class=AlligatorIndicators,
+    )
     is_active, situation = signal
 
     if is_active:
