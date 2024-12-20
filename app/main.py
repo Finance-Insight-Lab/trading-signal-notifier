@@ -1,73 +1,122 @@
-import logging
-import sys
+import ast
+import os
 import time
-import pandas as pd
 from datetime import datetime
+from typing import Tuple
 
+import pandas as pd
 import schedule
-from indicators import AddIndicators, AlligatorIndicators
+from dotenv import load_dotenv
+from indicators import AddAlligatorIndicators, AddIndicators
 from read_data import DataReadYfinance
-from signal_strategy import strategy_confirm
+from signal_strategy import AlligatorStrategyConfirm, StrategyConfirm
 from telegram_bot import TelegramBot
-from visualize import AlligatorVisualization
+from visualize import AlligatorVisualization, StrategyVisualization
+
+load_dotenv()
+currencis_list = os.environ.get("CURRENCIES_LIST")
+time_frames = os.environ.get("TIME_FRAMES")
+currencis_list: list = ast.literal_eval(currencis_list)
+time_frames: list = ast.literal_eval(time_frames)
 
 
-def visualize_signal(data_frame, time_frame: int, file_name: str) -> None:
-    visualization = AlligatorVisualization(data_frame, time_frame)
-    visualization.save_fig(file_name)
+def read_market_data(reader: DataReadYfinance) -> pd.DataFrame:
+    reader.get_data()
+    reader.data_cleaning()
+    return reader.data
+
+
+def process_market(
+    market_data: pd.DataFrame,
+    indicator: AddIndicators,
+    strategy: StrategyConfirm,
+) -> tuple[Tuple[bool, str], pd.DataFrame]:
+    df_with_indicator = indicator.calculate_indicators()
+    signal = strategy.strategy_confirm(df_with_indicator)
+    return signal, df_with_indicator
+
+
+def visualize_signal(visualization: StrategyVisualization) -> None:
+    visualization.create()
 
 
 def send_notif(
-    file_name: str, situation: str, time_frame: int, currency_name: str
+    file_name: str, situation: str, time_frame: str, currency_name: str
 ) -> None:
     telegram_bot = TelegramBot(
-        f"{situation} + in {time_frame} TimeFrame and in {currency_name} currency",
+        f"{situation} in {time_frame} timeframe, in {currency_name} currency",
         file_name,
     )
     telegram_bot.send_message()
 
 
-def process_market(
-    reading_data: DataReadYfinance,
-    indicator_class: AddIndicators,
-) -> tuple[list[bool, str], pd.DataFrame]:
-    reading_data.get_data()
-    reading_data.data_cleaning()
-    df = reading_data.data
-    df_with_alligator = indicator_class(df).calculate()
-    signal = strategy_confirm(df_with_alligator)
-    return signal, df_with_alligator
-
-
-def main() -> None:
-    read_data_obj = DataReadYfinance()
+def main(
+    currency_name: str = "EURUSD",
+    time_frame: str = "5m",
+    strategy: StrategyConfirm = AlligatorStrategyConfirm(),
+) -> None:
+    market_data = read_market_data(
+        reader=DataReadYfinance(currency_name=currency_name, time_frame=time_frame)
+    )
     signal, df_processed = process_market(
-        reading_data=read_data_obj,
-        indicator_class=AlligatorIndicators,
+        market_data=market_data,
+        indicator=AddAlligatorIndicators(market_data),
+        strategy=strategy,
     )
     is_active, situation = signal
 
     if is_active:
         file_name = "test"
         visualize_signal(
-            data_frame=df,
-            time_frame=read_data_obj.time_frame,
-            file_name=file_name,
+            visualization=AlligatorVisualization(
+                ohlc_data=df_processed, time_frame=time_frame, file_name=file_name
+            ),
         )
         send_notif(
             file_name=file_name,
             situation=situation,
-            time_frame=read_data_obj.time_frame,
-            currency_name=read_data_obj.currency_name,
+            time_frame=time_frame,
+            currency_name=currency_name,
         )
+
+
+def check_time_frames(time_frames: list) -> list:
+    valid_tfs = []
+    valid_fs = ("m", "h", "d")
+    for tf in time_frames:
+        time = int(tf[:-1])  # e.g. in `15m`, `time = 15`
+        frame = tf[-1]  # e.g. in `15m`, `frame = minute`
+        if frame not in valid_fs:
+            continue
+        if frame == "m":
+            if datetime.utcnow().minute % time == 0:
+                valid_tfs.append(tf)
+        elif frame == "h":
+            now = datetime.utcnow()
+            if now.hour % time == 2 and now.minute == 0:
+                valid_tfs.append(tf)
+        elif frame == "d":
+            now = datetime.utcnow()
+            if now.day % time == 0 and now.hour == 0 and now.minute == 0:
+                valid_tfs.append(tf)
+        else:
+            continue
+
+    return valid_tfs
 
 
 def job():
     try:
+        tfs = check_time_frames(time_frames=time_frames)
         print(datetime.now())
-        if datetime.now().minute % 5 == 0:
+        for time_frame in tfs:
             print(f"Started Reading Data at {time.strftime('%X')}")
-            main()
+            for currency_name in currencis_list:
+                main(
+                    currency_name=currency_name,
+                    time_frame=time_frame,
+                    strategy=AlligatorStrategyConfirm(),
+                )
             print(f"Finished Reading Data at {time.strftime('%X')}")
     except:
         print("Error Running 'task' function")

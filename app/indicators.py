@@ -5,10 +5,10 @@ from typing import Protocol
 
 class AddIndicators(Protocol):
     def calculate_indicators(self) -> pd.DataFrame:
-        pass
+        ...
 
 
-class AlligatorIndicators:
+class AddAlligatorIndicators:
     def __init__(self, df):
         self.df = df
 
