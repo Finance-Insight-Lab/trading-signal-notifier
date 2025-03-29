@@ -8,19 +8,17 @@ import pandas as pd
 import schedule
 from dotenv import load_dotenv
 from indicators import AddAlligatorIndicators, AddIndicators
-from read_data import DataReadYfinance
+from read_data import DataRead, DataReadYfinance
 from signal_strategy import AlligatorStrategyConfirm, StrategyConfirm
 from telegram_bot import TelegramBot
 from visualize import AlligatorVisualization, StrategyVisualization
 
 load_dotenv()
-currencis_list = os.environ.get("CURRENCIES_LIST")
-time_frames = os.environ.get("TIME_FRAMES")
-currencis_list: list = ast.literal_eval(currencis_list)
-time_frames: list = ast.literal_eval(time_frames)
+currencis_list: list = ast.literal_eval(os.environ.get("CURRENCIES_LIST", "[]"))
+time_frames: list = ast.literal_eval(os.environ.get("TIME_FRAMES", "[]"))
 
 
-def read_market_data(reader: DataReadYfinance) -> pd.DataFrame:
+def read_market_data(reader: DataRead) -> pd.DataFrame:
     reader.get_data()
     reader.data_cleaning()
     return reader.data
@@ -53,11 +51,11 @@ def send_notif(
 def main(
     currency_name: str = "EURUSD",
     time_frame: str = "5m",
+    data_reader: DataRead = DataReadYfinance(),
     strategy: StrategyConfirm = AlligatorStrategyConfirm(),
 ) -> None:
-    market_data = read_market_data(
-        reader=DataReadYfinance(currency_name=currency_name, time_frame=time_frame)
-    )
+    data_reader.currency_name, data_reader.time_frame = currency_name, time_frame
+    market_data = read_market_data(reader=data_reader)
     signal, df_processed = process_market(
         market_data=market_data,
         indicator=AddAlligatorIndicators(market_data),
@@ -88,15 +86,14 @@ def check_time_frames(time_frames: list) -> list:
         frame = tf[-1]  # e.g. in `15m`, `frame = minute`
         if frame not in valid_fs:
             continue
+        now = datetime.utcnow()
         if frame == "m":
-            if datetime.utcnow().minute % time == 0:
+            if now.minute % time == 0:
                 valid_tfs.append(tf)
         elif frame == "h":
-            now = datetime.utcnow()
             if now.hour % time == 2 and now.minute == 0:
                 valid_tfs.append(tf)
         elif frame == "d":
-            now = datetime.utcnow()
             if now.day % time == 0 and now.hour == 0 and now.minute == 0:
                 valid_tfs.append(tf)
         else:

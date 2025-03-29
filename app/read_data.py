@@ -1,5 +1,19 @@
 import pandas as pd
 import yfinance as yf
+from typing import Protocol, Tuple
+
+
+class DataRead(Protocol):
+    def __init__(self, currency_name: str, time_frame: str):
+        self.data: pd.DataFrame
+        self.currency_name: str
+        self.time_frame: str
+
+    def get_data(self, length=150):
+        ...
+
+    def data_cleaning(self):
+        ...
 
 
 class DataReadYfinance:
@@ -18,7 +32,7 @@ class DataReadYfinance:
             "1wk": "3y",
         }
 
-    def get_data(self, length=150):
+    def get_data(self, length=150) -> None:
         ticker = yf.Ticker(f"{self.currency_name}=X")
         data = ticker.history(
             interval=self.time_frame,
@@ -29,7 +43,7 @@ class DataReadYfinance:
         data = data.reset_index(drop=True)
         self.data = data[["date", "Open", "High", "Low", "Close"]]
 
-    def data_cleaning(self):
+    def data_cleaning(self) -> None:
         new_dates = []
         new_format = "%m-%d-%Y, %H:%M:%S"
         x_dates = self.data["date"]
