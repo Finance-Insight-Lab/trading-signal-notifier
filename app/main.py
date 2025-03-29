@@ -1,6 +1,7 @@
 import ast
 import os
 import time
+import traceback
 from datetime import datetime
 from typing import Tuple
 
@@ -116,7 +117,9 @@ def job():
                 )
             print(f"Finished Reading Data at {time.strftime('%X')}")
     except:
+        traceback_str = traceback.format_exc()
         print("Error Running 'task' function")
+        print(f"error: {traceback_str}")
 
 
 schedule.every(1).minutes.at(":00").do(job)
