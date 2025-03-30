@@ -28,8 +28,8 @@ class DataReadYfinance:
             "15m": "7d",
             "30m": "14d",
             "1h": "30d",
+            "4h": "100d",
             "1d": "150d",
-            "1wk": "3y",
         }
 
     def get_data(self, length=150) -> None:
