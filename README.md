@@ -9,8 +9,21 @@ Trading Signal Notifier is a Docker-based tool that sends notifications when pre
 * Future Development: Plans include support for multiple trading strategies and data sources.
 
 ## Prerequisites
+* Stragegy
 * Docker
 * Telegram Bot and Channel
+
+## Create your Strategy
+Use the following template to create your strategy:
+
+```python
+class StrategyConfirm(Protocol):
+    def strategy_confirm(self, df: pd.DataFrame) -> Tuple[bool, str]: ...
+```
+* input: a dataframe containing historical data
+* output: a tuple containing a boolean indicating whether the signal is confirmed and a string containing the signal message
+
+There is a sample for this class to notify alligator trading strategy named `AlligatorStrategyConfirm` which implements the `strategy_confirm` method.
 
 ## Installation
 * Clone the repository: `git clone https://github.com/aligheshlaghi97/trading-signal-notifier.git`
