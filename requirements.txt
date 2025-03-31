@@ -2,7 +2,7 @@ telepot~=12.7
 yfinance~=0.2.12
 plotly~=5.11.0
 tapy~=1.9.1
-pandas~=1.5.2
+pandas~=2.1.4
 schedule~=1.1.0
 python-dotenv~=0.21.1
-kaleido
+kaleido~=0.2.1
