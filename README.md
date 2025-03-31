@@ -3,6 +3,9 @@
 ## TL;DR
 Trading Signal Notifier is a Docker-based tool that sends notifications when predefined trading conditions are met. It supports multi-timeframe and multi-asset signaling, with plans for multi-strategy and multi-platform support. Ideal for manual traders seeking timely alerts across various platforms.
 
+![sample-result](https://github.com/user-attachments/assets/419e7f35-b542-43ec-8cab-4f342130227d)
+
+
 ## Key Features
 * Multi-Timeframe Support: Monitor trading signals across different timeframes.
 * Multi-Asset Support: Receive notifications for multiple financial assets.
