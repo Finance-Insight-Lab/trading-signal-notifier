@@ -30,12 +30,10 @@ class StrategyConfirm(Protocol):
 
 There is a sample for this class to notify alligator trading strategy named `AlligatorStrategyConfirm` which implements the `strategy_confirm` method.
 
-## Installation
+## Installation/Usage
 * Clone the repository: `git clone https://github.com/aligheshlaghi97/trading-signal-notifier.git`
 * Navigate to the project directory: `cd trading-signal-notifier`
 * Build the Docker image: `docker-compose build`
-
-## Usage
 * Start the Docker container: `docker-compose up -d`
 * To stop the container: `docker-compose down`
 
@@ -48,12 +46,12 @@ The program uses environment variables for configuration. You can set these vari
 * `CURRENCIES_LIST`: List of currencies to check for your setups
 * `TIME_FRAMES`: List of time frames to check for your setups
 
-## Telegram Channel
+## Sample Telegram Channel
 Sample messages and images are sent to [this Telegram channel](https://t.me/alligator_signal).
 Please feel free to join the channel to stay updated on the signals.
 
 ## Contributing
-To contribute code, submit a pull request with:
+To contribute code, submit a pull request:
 
 * Create a new branch for your changes
 * Follow the existing code style and conventions
