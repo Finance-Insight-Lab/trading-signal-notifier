@@ -31,7 +31,7 @@ class StrategyConfirm(Protocol):
 There is a sample for this class to notify alligator trading strategy named `AlligatorStrategyConfirm` which implements the `strategy_confirm` method.
 
 ## Installation/Usage
-* Clone the repository: `git clone https://github.com/aligheshlaghi97/trading-signal-notifier.git`
+* Clone the repository: `git clone https://github.com/Finance-Insight-Lab/trading-signal-notifier.git`
 * Navigate to the project directory: `cd trading-signal-notifier`
 * Build the Docker image: `docker-compose build`
 * Start the Docker container: `docker-compose up -d`
