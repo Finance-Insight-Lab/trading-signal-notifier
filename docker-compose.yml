@@ -1,7 +1,7 @@
 version: "3.9"
 services:
-    alligator_bot:
-        build: .
-        volumes:
-            - .:/app
-        restart: always
+  alligator_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
