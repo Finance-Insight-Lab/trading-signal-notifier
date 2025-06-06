@@ -5,4 +5,4 @@ tapy~=1.9.1
 pandas~=2.1.4
 schedule~=1.1.0
 python-dotenv~=0.21.1
-kaleido~=0.2.1
+kaleido~=1.0.0rc15
