@@ -1,38 +1,25 @@
-# ---- Base build image ----
-FROM python:3.9-alpine AS builder
-
-# Optional: faster builds
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# Add dependencies required for building Python packages
-RUN apk add --no-cache gcc musl-dev libffi-dev
+# Stage 1: Builder
+FROM python:3.9-slim AS builder
 
 WORKDIR /app
+
+# Install system deps for building packages like numpy, pandas, etc.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 
-# Use a virtualenv to isolate build
-RUN python -m venv /venv && \
-    . /venv/bin/activate && \
-    pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Install dependencies into a temporary folder
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# ---- Final runtime image ----
-FROM python:3.9-alpine
-
-# Create a new user and switch to it
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Optional: faster, isolated venv
-ENV PATH="/venv/bin:$PATH"
+# Stage 2: Final clean image
+FROM python:3.9-slim
 
 WORKDIR /app
 
-# Copy venv and app from builder
-COPY --from=builder /venv /venv
-COPY ./app /app
+COPY --from=builder /install /usr/local
+COPY ./app ./app
 
-USER appuser
-
-CMD ["python", "-u", "main.py"]
+CMD ["python", "-u", "app/main.py"]
