@@ -4,10 +4,9 @@ from typing import Protocol, Tuple
 
 
 class DataRead(Protocol):
-    def __init__(self, currency_name: str, time_frame: str):
-        self.data: pd.DataFrame
-        self.currency_name: str
-        self.time_frame: str
+    data: pd.DataFrame
+    currency_name: str
+    time_frame: str
 
     def get_data(self, length=150):
         ...

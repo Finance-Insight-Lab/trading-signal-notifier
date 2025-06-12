@@ -4,12 +4,14 @@ from typing import Protocol
 
 
 class AddIndicators(Protocol):
+    df: pd.DataFrame
+
     def calculate_indicators(self) -> pd.DataFrame:
         ...
 
 
 class AddAlligatorIndicators:
-    def __init__(self, df):
+    def __init__(self, df: pd.DataFrame = pd.DataFrame()):
         self.df = df
 
     def _pre_defined_inds(self):

@@ -6,12 +6,16 @@ import plotly.graph_objects as go
 
 
 class StrategyVisualization(Protocol):
+    data: pd.DataFrame
+    time_frame: str
+    file_name: str
+
     def create(self) -> None: ...
 
 
 class AlligatorVisualization:
     def __init__(
-        self, ohlc_data: pd.DataFrame, time_frame: str = "5m", file_name: str = "test"
+        self, ohlc_data: pd.DataFrame = pd.DataFrame(), time_frame: str = "5m", file_name: str = "test"
     ):
         self.time_frame = time_frame
         self.file_name = file_name
