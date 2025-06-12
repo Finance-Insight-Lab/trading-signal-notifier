@@ -17,9 +17,18 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Stage 2: Final clean image
 FROM python:3.9-slim
 
+# Create a non-root user and group
+RUN addgroup --system appuser && adduser --system --ingroup appuser appuser
+
 WORKDIR /app
 
 COPY --from=builder /install /usr/local
 COPY ./app ./app
+
+# Set permissions (optional but good practice)
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
 
 CMD ["python", "-u", "app/main.py"]
