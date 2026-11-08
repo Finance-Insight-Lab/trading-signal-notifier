@@ -6,3 +6,4 @@ pandas~=2.1.4
 schedule~=1.1.0
 python-dotenv~=1.2.4
 kaleido~=0.2.1
+pytest~=8.4.2

@@ -122,7 +122,8 @@ def job():
         print(f"error: {traceback_str}")
 
 
-schedule.every(1).minutes.at(":00").do(job)
-while True:
-    schedule.run_pending()
-    time.sleep(0.1)
+if __name__ == "__main__":
+    schedule.every(1).minutes.at(":00").do(job)
+    while True:
+        schedule.run_pending()
+        time.sleep(0.1)
